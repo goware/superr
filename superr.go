@@ -27,16 +27,29 @@ func New(err error, causes ...error) error {
 	return stack
 }
 
+// Wrap is synonymous with New, in case someone finds that name more familiar
+// or intuitive.
+func Wrap(err error, causes ...error) error {
+	return New(err, causes...)
+}
+
 type Error interface {
 	Err() error
-	Cause
 }
 
 type Cause interface {
 	Cause() error
 }
 
-var _ Error = &errStack{}
+type ErrorWithCause interface {
+	Error
+	Cause
+}
+
+var (
+	_ Error = &errStack{}
+	_ Cause = &errStack{}
+)
 
 type errStack struct {
 	err   error
@@ -71,4 +84,40 @@ func (e errStack) Is(target error) bool {
 		return true
 	}
 	return false
+}
+
+// GetErrorStack returns the nested tree of errors from superr, in the form
+// of a flat list.
+func GetErrorStack(err error) []error {
+	if err == nil {
+		return []error{}
+	}
+
+	errs := []error{}
+	if e, ok := err.(ErrorWithCause); ok {
+		errs = append(errs, e.Err())
+	} else {
+		errs = append(errs, err)
+	}
+
+	for {
+		unwrap, ok := err.(interface{ Unwrap() error })
+		if !ok {
+			break
+		}
+
+		werr := unwrap.Unwrap()
+		if werr == nil {
+			break
+		}
+
+		if e, ok := werr.(ErrorWithCause); ok {
+			errs = append(errs, e.Err())
+		} else {
+			errs = append(errs, werr)
+		}
+		err = werr
+	}
+
+	return errs
 }
