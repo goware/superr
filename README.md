@@ -7,15 +7,15 @@ Build a stack of errors compatible with Go stdlib and errors.Is(..).
 
 ## Why? & Goals
 
-IMHO, errors in Go are awesome and simple, but often in practice lose meaning and get messy.
+IMHO, errors in Go are awesome and simple, but often in practice lose meaning and get messy
+with many of application-specific messages that are difficult to test for equality.
 
-As an error is returned up the call stack from `if err != nil { return .., err }`, it either
-a.) loses its meaning on the way up b.) creates messy error messages c.) makes it difficult
+Typically, as an error is returned up the call stack from `if err != nil { return .., err }`,
+it either a.) loses its meaning on the way up b.) creates messy error messages c.) is difficult
 to test equality of the error value against a standard set of error values.
 
-Superr looks to solve those problems by leveraging the new error support from Go.13 of
-wrapped errors (via `fmt.Errorf("xxx: %w", err)` and `errors.Is`). In some ways you can think
-of this as the inverse direction of wrapping an error that fmt.Errorf provides.
+`superr` looks to solve those problems by leveraging the new error support from Go.13 of
+wrapped errors (via `fmt.Errorf("xxx: %w", err)` and `errors.Is`).
 
 The idea/mindset here is for any application/package you should always start by declaring
 a well-defined set of error scenarios as values. This helps you be thoughtful about the
@@ -24,9 +24,10 @@ you to handle these errors throughout your code by having the ability to test th
 emitted by your application against the standard set of errors. 
 
 The stdlib provides most of these capabilities for us, however, the main challenge is you
-can't do `fmt.Errorf("%w: %w", ErrBasicAuthError, appErr)`, which is invalid. This is where
+can't do `fmt.Errorf("%w: %w", ErrBasicAuthError, appErr)`, (this is invalid). This is where
 superr comes in, where you would use `superr.New(ErrBasicAuthError, appErr)` which defines
-a nested error composed of both `ErrBasicAuthError` and `appErr` values.
+a nested error composed of both `ErrBasicAuthError` and `appErr` values. There are other
+benefits superr provides as well -- check out the source and tests for more tricks.
 
 
 ## Example
