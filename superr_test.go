@@ -15,6 +15,11 @@ var (
 	ErrDeclined = errors.New("declined")
 )
 
+func TestVanilla(t *testing.T) {
+	err := fmt.Errorf("some error: %w", ErrFail)
+	assert(t, errors.Is(err, ErrFail), "expecting err is ErrFail")
+}
+
 func TestBasic(t *testing.T) {
 	err := superr.New(ErrFail, ErrAppOpps, ErrDeclined, fmt.Errorf("nooo.."))
 	assert(t, errors.Is(err, ErrFail), "expecting err is ErrFail")
